@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --brand: #f15a22;
+}
+
+html,
+body {
+  background-color: #f4f5f7;
+  color: #1e293b;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Soft orange wash behind the header band */
+.bg-brandwash {
+  background-image: radial-gradient(900px 240px at 12% -40%, rgba(241, 90, 34, 0.1), transparent 70%);
+}
+
+.card {
+  border-radius: 0.9rem;
+  border: 1px solid #e6e8ec;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 10px 24px -18px rgba(16, 24, 40, 0.25);
+}
+
+.card-hover {
+  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(241, 90, 34, 0.45);
+  box-shadow: 0 14px 30px -18px rgba(241, 90, 34, 0.35);
+}
+
+@keyframes fadeup {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fadeup {
+  animation: fadeup 0.45s ease both;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
