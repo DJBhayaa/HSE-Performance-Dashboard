@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="130" height="150" viewBox="0 0 130 150" role="img" aria-label="Almabani">
+  <g transform="translate(65,52)">
+    <polygon points="0,0 0,-40 26,-28" fill="#141414" transform="rotate(0)"/>
+    <polygon points="0,0 0,-40 26,-28" fill="#E8730C" transform="rotate(90)"/>
+    <polygon points="0,0 0,-40 26,-28" fill="#141414" transform="rotate(180)"/>
+    <polygon points="0,0 0,-40 26,-28" fill="#E8730C" transform="rotate(270)"/>
+  </g>
+  <text x="65" y="128" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="800" fill="#141414" letter-spacing="0.5">almabani</text>
+</svg>

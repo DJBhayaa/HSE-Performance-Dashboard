@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="210" viewBox="0 0 520 210" role="img" aria-label="We love life - committed to zero severe accidents">
+  <rect x="0" y="0" width="520" height="210" rx="22" fill="#E8500E"/>
+  <rect x="14" y="14" width="212" height="182" rx="18" fill="#FFFFFF"/>
+  <!-- we love life -->
+  <text x="40" y="92" font-family="Arial Black, Arial, sans-serif" font-size="46" font-weight="900" fill="#1A1A1A">we</text>
+  <path d="M150 56 c8-14 30-12 30 6 c0 14-22 26-30 34 c-8-8-30-20-30-34 c0-18 22-20 30-6 z" fill="#F15A22"/>
+  <text x="40" y="168" font-family="Arial Black, Arial, sans-serif" font-size="62" font-weight="900" fill="#1A1A1A">life</text>
+  <!-- committed to 0 severe accidents -->
+  <text x="252" y="74" font-family="Arial, sans-serif" font-size="26" font-weight="800" fill="#FFFFFF" letter-spacing="1">COMMITTED TO</text>
+  <text x="252" y="128" font-family="Arial Black, Arial, sans-serif" font-size="42" font-weight="900" fill="#FFFFFF" letter-spacing="1">0 SEVERE</text>
+  <text x="252" y="170" font-family="Arial, sans-serif" font-size="26" font-weight="800" fill="#FFFFFF" letter-spacing="1">ACCIDENTS</text>
+</svg>

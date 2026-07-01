@@ -26,8 +26,17 @@ export default function Dashboard() {
   const [source, setSource] = useState<DataSource>("bundled");
   const [fileName, setFileName] = useState<string | undefined>();
   const [tab, setTab] = useState<Tab>("Dashboard");
+  const [scrolled, setScrolled] = useState(false);
 
   const m = useMemo(() => buildMetrics(dataset), [dataset]);
+
+  // Shrink the sticky header once the page is scrolled.
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,15 +62,17 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen">
-      {/* Header band */}
-      <div className="bg-brandwash border-b border-line bg-white">
-        <div className="mx-auto max-w-[1440px] px-4 pt-5 sm:px-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      {/* Header band — sticky; shrinks on scroll but keeps all logos */}
+      <div className={`bg-brandwash sticky top-0 z-40 border-b border-line bg-white/95 backdrop-blur transition-all ${scrolled ? "shadow-md" : ""}`}>
+        <div className={`mx-auto max-w-[1440px] px-4 transition-all sm:px-6 ${scrolled ? "pt-2" : "pt-5"}`}>
+          <div className={`flex flex-col lg:flex-row lg:items-center lg:justify-between ${scrolled ? "gap-1" : "gap-4"}`}>
             <div className="flex items-center gap-3">
-              <Logo src="/logos/primary-logo.png" fallbackSrc="/logos/primary-mark.svg" alt="QTC JV" fallback="QTC JV" className="h-12 w-auto" />
+              <Logo src="/logos/primary-logo.png" fallbackSrc="/logos/primary-mark.svg" alt="QTC JV" fallback="QTC JV" className={`${scrolled ? "h-8" : "h-12"} w-auto transition-all`} />
               <div>
-                <h1 className="text-xl font-extrabold leading-tight text-slate-900 sm:text-2xl">H&amp;S Performance Dashboard</h1>
-                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500">
+                <h1 className={`font-extrabold leading-tight text-slate-900 transition-all ${scrolled ? "text-base sm:text-lg" : "text-xl sm:text-2xl"}`}>
+                  H&amp;S Performance Dashboard
+                </h1>
+                <div className={`mt-0.5 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 ${scrolled ? "hidden sm:flex" : "flex"}`}>
                   <span>QTC JV · Qiddiya Tennis Centre</span>
                   <span className="text-line">|</span>
                   <span className="rounded border border-line bg-white px-1.5 py-0.5 font-medium text-slate-700">
@@ -71,13 +82,13 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Logo src="/logos/welovelife.png" fallbackSrc="/logos/welovelife.svg" alt="We love life — committed to 0 severe accidents" fallback="WE LOVE LIFE" className="h-11 w-auto" />
-              <Logo src="/logos/secondary-logo.png" fallbackSrc="/logos/secondary-logo.svg" alt="Bouygues Construction" fallback="BOUYGUES" className="h-11 w-auto" />
-              <Logo src="/logos/almabani-logo.png" fallbackSrc="/logos/almabani-mark.svg" alt="Almabani" fallback="ALMABANI" className="h-11 w-auto" />
+              <Logo src="/logos/welovelife.png" fallbackSrc="/logos/welovelife.svg" alt="We love life — committed to 0 severe accidents" fallback="WE LOVE LIFE" className={`${scrolled ? "h-8" : "h-11"} w-auto transition-all`} />
+              <Logo src="/logos/secondary-logo.png" fallbackSrc="/logos/secondary-logo.svg" alt="Bouygues Construction" fallback="BOUYGUES" className={`${scrolled ? "h-8" : "h-11"} w-auto transition-all`} />
+              <Logo src="/logos/almabani-logo.png" fallbackSrc="/logos/almabani-mark.svg" alt="Almabani" fallback="ALMABANI" className={`${scrolled ? "h-8" : "h-11"} w-auto transition-all`} />
             </div>
           </div>
 
-          <nav className="mt-4 flex flex-wrap gap-1">
+          <nav className={`flex flex-wrap gap-1 transition-all ${scrolled ? "mt-1.5" : "mt-4"}`}>
             {TABS.map((t) => (
               <button
                 key={t}

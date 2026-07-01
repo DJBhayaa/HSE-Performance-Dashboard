@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="400" viewBox="0 0 320 400" role="img" aria-label="QTC Joint Venture">
+  <!-- BBI-AGC interlocking monogram: orange (TL,BR) + grey (TR,BL) -->
+  <g>
+    <!-- Top-left (orange) -->
+    <rect x="63" y="25" width="24" height="96" rx="6" fill="#E87722"/>
+    <circle cx="95" cy="95" r="40" fill="none" stroke="#E87722" stroke-width="24"/>
+    <!-- Top-right (grey) -->
+    <rect x="233" y="25" width="24" height="96" rx="6" fill="#6E6F6A"/>
+    <circle cx="225" cy="95" r="40" fill="none" stroke="#6E6F6A" stroke-width="24"/>
+    <!-- Bottom-left (grey) -->
+    <rect x="63" y="179" width="24" height="96" rx="6" fill="#6E6F6A"/>
+    <circle cx="95" cy="205" r="40" fill="none" stroke="#6E6F6A" stroke-width="24"/>
+    <!-- Bottom-right (orange) -->
+    <rect x="233" y="179" width="24" height="96" rx="6" fill="#E87722"/>
+    <circle cx="225" cy="205" r="40" fill="none" stroke="#E87722" stroke-width="24"/>
+  </g>
+  <text x="160" y="322" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="46" font-weight="700" fill="#6E6F6A" letter-spacing="3">QTC</text>
+  <text x="160" y="364" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="30" font-weight="600" fill="#6E6F6A" letter-spacing="3">JOINT VENTURE</text>
+</svg>
