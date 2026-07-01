@@ -18,6 +18,9 @@ import { SnapshotButton } from "./Snapshot";
 const TABS = ["Dashboard", "Zone KPIs", "Violations", "Detailed", "Incident Log", "Update Data"] as const;
 type Tab = (typeof TABS)[number];
 
+// Bump when deploying — lets you confirm which build is live (shown in the footer).
+const APP_VERSION = "build 2026-07-01 · tz-fix";
+
 const int = (n: number) => Math.round(n).toLocaleString();
 const r2 = (n: number) => n.toFixed(2);
 
@@ -127,6 +130,7 @@ export default function Dashboard() {
         <footer className="mt-10 border-t border-line pt-4 text-center text-[11px] text-slate-400">
           QTC JV · Bouygues Construction — figures derived from the QTC HSE Data Workbook ·{" "}
           {source === "uploaded" ? "showing your uploaded workbook (preview)" : source === "workbook-file" ? "live from project workbook" : "built-in sample data"}
+          <span className="ml-1 text-slate-300">· {APP_VERSION}</span>
         </footer>
       </div>
     </div>

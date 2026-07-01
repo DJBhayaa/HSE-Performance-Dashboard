@@ -26,16 +26,18 @@ export const LAGGING_ZONE_METRICS = [
   "Severe Accident",
 ];
 
+// Format from the ISO string via an explicit UTC date so the month/year never
+// slip due to the viewer's timezone.
 export const monthLabel = (iso: string): string => {
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-GB", { month: "short", year: "2-digit" });
+  const [y, mo] = iso.split("-").map(Number);
+  if (!y || !mo) return iso;
+  return new Date(Date.UTC(y, mo - 1, 1)).toLocaleDateString("en-GB", { month: "short", year: "2-digit", timeZone: "UTC" });
 };
 
 export const monthLong = (iso: string): string => {
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  const [y, mo] = iso.split("-").map(Number);
+  if (!y || !mo) return iso;
+  return new Date(Date.UTC(y, mo - 1, 1)).toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
 };
 
 // Recordable events used for the Global Frequency Rate.

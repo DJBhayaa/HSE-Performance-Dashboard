@@ -17,16 +17,26 @@ const REQUIRED_SHEETS = ["Main Data", "H&S", "Accident logs", "Violations", "KPI
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
-/** Normalise any date-ish cell to an ISO "YYYY-MM-DD" string (null if unparseable). */
+/**
+ * Normalise any date-ish cell to an ISO "YYYY-MM-DD" string (null if unparseable).
+ * Excel date cells are read as serial NUMBERS and decoded with SSF.parse_date_code
+ * so the calendar date is timezone-independent — a Date object read with local
+ * getters would slip a day (e.g. 2025-10-01 → 2025-09-30) in UTC+ timezones.
+ */
 function toISO(v: unknown): string | null {
   if (v == null || v === "") return null;
-  if (v instanceof Date) return `${v.getFullYear()}-${pad(v.getMonth() + 1)}-${pad(v.getDate())}`;
   if (typeof v === "number") {
     const d = XLSX.SSF.parse_date_code(v);
-    if (d) return `${d.y}-${pad(d.m)}-${pad(d.d)}`;
+    return d && d.y ? `${d.y}-${pad(d.m)}-${pad(d.d)}` : null;
   }
-  const d = new Date(String(v).trim());
-  return isNaN(d.getTime()) ? null : `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  if (v instanceof Date) {
+    return `${v.getUTCFullYear()}-${pad(v.getUTCMonth() + 1)}-${pad(v.getUTCDate())}`;
+  }
+  const s = String(v).trim();
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
 }
 
 const num = (v: unknown): number => {
@@ -78,7 +88,9 @@ function summarize(dataset: Dataset): ParseResult {
 }
 
 export function parseWorkbook(buf: ArrayBuffer): ParseResult {
-  const wb = XLSX.read(buf, { type: "array", cellDates: true });
+  // No cellDates: keep date cells as serial numbers so toISO() can decode them
+  // timezone-safely (cellDates:true would shift dates a day in UTC+ zones).
+  const wb = XLSX.read(buf, { type: "array" });
 
   const missing = REQUIRED_SHEETS.filter((s) => !wb.SheetNames.includes(s));
   if (missing.length) {

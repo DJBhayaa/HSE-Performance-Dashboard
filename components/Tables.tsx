@@ -3,8 +3,12 @@
 import React, { useMemo, useState } from "react";
 import type { Incident, Violation } from "@/lib/types";
 
-const fmtDate = (iso: string) =>
-  iso ? new Date(iso).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+const fmtDate = (iso: string) => {
+  if (!iso) return "—";
+  const [y, m, d] = iso.split("-").map(Number);
+  if (!y || !m || !d) return iso;
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" });
+};
 
 function Badge({ text, tone }: { text: string; tone: "good" | "warn" | "bad" | "info" | "muted" }) {
   const map: Record<string, string> = {

@@ -5,8 +5,12 @@ import type { Metrics } from "@/lib/metrics";
 import { Panel, SectionTitle, numberFmt } from "./ui";
 import { HBar, Donut } from "./charts/Charts";
 
-const fmtDate = (iso: string) =>
-  iso ? new Date(iso).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+const fmtDate = (iso: string) => {
+  if (!iso) return "—";
+  const [y, m, d] = iso.split("-").map(Number);
+  if (!y || !m || !d) return iso;
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" });
+};
 
 export function Violators({ m }: { m: Metrics }) {
   const [q, setQ] = useState("");
