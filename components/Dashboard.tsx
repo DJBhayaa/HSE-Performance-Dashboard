@@ -486,7 +486,7 @@ function EmptyState() {
       <div>
         <p className="text-base font-semibold text-slate-800">No active months in this workbook</p>
         <p className="mt-1 max-w-md text-sm text-slate-500">
-          The KPI_Monthly sheet has no rows with booked manhours yet. Add a month with figures, or use{" "}
+          The Main Data sheet has no months with booked manhours yet. Add a month with figures, or use{" "}
           <b className="text-brand">⬆ Update Data</b> to load a workbook that contains data.
         </p>
       </div>

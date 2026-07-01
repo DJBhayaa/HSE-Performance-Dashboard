@@ -109,7 +109,7 @@ export function DataPanel({
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Panel title="Quick preview (this device)" subtitle="Try a new month in seconds">
           <ol className="space-y-2 text-xs leading-relaxed text-slate-500">
-            <li><b className="text-slate-700">1.</b> In Excel, add the new month's figures to your workbook (KPI_Monthly, Incidents, Violations, Zone_KPI).</li>
+            <li><b className="text-slate-700">1.</b> In Excel, add the new month's figures to your workbook (Main Data, H&amp;S, Accident logs, Violations, KPI Data).</li>
             <li><b className="text-slate-700">2.</b> Drag that file into the box above.</li>
             <li><b className="text-slate-700">3.</b> The whole dashboard updates live. (This preview is only on your screen — it resets on refresh.)</li>
           </ol>

@@ -6,7 +6,7 @@ import { Panel, SectionTitle } from "./ui";
 import { ZoneMonthlyBars, ZoneGroupChart } from "./charts/Charts";
 
 export function ZoneKPIs({ m }: { m: Metrics }) {
-  const metrics = m.zoneMetricNames; // all 14 metrics from the Zone_KPI sheet
+  const metrics = m.zoneMetricNames; // all 14 metrics from the KPI Data sheet
   const leadingData = m.zoneGroupMonthly(m.leadingZoneMetrics);
   const laggingData = m.zoneGroupMonthly(m.laggingZoneMetrics);
 

@@ -6,7 +6,7 @@ import type { Dataset, MonthKpi, Incident, Violation, ZoneKpiRow } from "./types
 
 const n = (v: unknown): number => (typeof v === "number" ? v : 0);
 
-// The 7 leading (proactive) and 7 lagging (outcome) Zone_KPI metrics.
+// The 7 leading (proactive) and 7 lagging (outcome) zone KPI metrics.
 export const LEADING_ZONE_METRICS = [
   "Leadership Walkthroughs",
   "Stop&Go by H&S",

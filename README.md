@@ -1,29 +1,29 @@
-# QTC JV — HSE Performance Dashboard
+# QTC JV — H&S Performance Dashboard
 
-An interactive Health & Safety dashboard for the **BBI-AGC Joint Venture · Qiddiya
-Tennis Centre (QTC)** project. It turns the `QTC_HSE_Data_Workbook` into a clean,
-manager-ready web dashboard that mirrors the JV reporting structure — focused on
-the metrics that matter, not an overwhelming wall of numbers.
+An interactive Health & Safety dashboard for the **QTC Joint Venture · Qiddiya
+Tennis Centre**, built from the QTC HSE Data Workbook. White/orange theme,
+QTC JV / Bouygues Construction / Almabani branding, "we ❤ life" motto.
 
-## What it shows
-
-The dashboard is organised into four tabs:
+## Pages
 
 | Tab | Contents |
 | --- | --- |
-| **Overview** | The 8 headline KPIs (Manhours, Manpower, Global & LTA Frequency Rates, First Aid, Near Miss, Total & Open Violations), proactive leading indicators, the **Safety Triangle**, and incident / violation breakdowns. |
-| **Trends** | Monthly trends — manhours vs manpower, incidents by month, training delivered, intervention & assurance activity. |
-| **Zones** | Near misses & violations by area plus a **Zone × Metric** scorecard matrix. |
-| **Records** | Searchable, filterable **Incident & Near-Miss log** and **Violation register**. |
+| **Dashboard** | 12 KPI indicators (First Aid, LTA, Lost Work Days, Global/LTA Freq Rate, LTA Severity Rate, Near Miss, Road Traffic, MRA, MRN, Manhours, Severe) with a **YTD ⟷ Current Month** toggle — Current Month shows the ▲/▼ % change vs the previous month. Plus 9 monthly charts, 4 distribution pies, the Heinrich safety triangle, and a frequency/severity rates chart. A single **Export 16:9 Snapshot** button downloads a 1920×1080 PNG of every KPI and chart. |
+| **Zone KPIs** | Leading & Lagging indicators per zone (7 / 7) with a monthly trend line, plus 14 per-metric charts with dashed monthly-target lines. |
+| **Violations** | Violator leaderboard (names, Iqama, repeat-offender flags), unique-violator count, and category / company / location / status breakdowns. |
+| **Detailed** | Deep-dive analytics + a monthly KPI register table. |
+| **Incident Log** | Major-risk analysis (by category, zone, month) + the full incident/accident register. |
+| **⬆ Update Data** | Drag-and-drop a workbook to preview a new month instantly. |
 
-Every figure is **derived in code** from the workbook data (`lib/metrics.ts`), so
-the headline cards and charts always agree with the source numbers.
+Every figure is recomputed in `lib/metrics.ts` from the raw workbook tables, so
+the cards and charts always agree with the source. Global Frequency Rate =
+`(LTA + Severe + Major Risk Accident + RTA) × 1,000,000 ÷ manhours`.
 
 ## Tech stack
 
 - **Next.js 14** (App Router) + **TypeScript**
-- **Tailwind CSS** for styling (dark "command-center" theme)
-- **Recharts** for charts; a hand-built SVG safety triangle
+- **Tailwind CSS** (light theme) · **Recharts** · **SheetJS (xlsx)** for parsing
+- **html2canvas** for the 16:9 snapshot export
 - Fully static — no backend, no database
 
 ## Getting started
@@ -31,38 +31,48 @@ the headline cards and charts always agree with the source numbers.
 ```bash
 npm install
 npm run dev      # http://localhost:3000
+npm run build && npm run start   # production
 ```
 
-Production build:
+## Data source & monthly updates
 
-```bash
-npm run build
-npm run start
+The dashboard reads **one file at runtime**:
+
+```
+public/data/QTC_HSE_Data_Workbook.xlsx
 ```
 
-## Updating the data
+⚠️ This is the live data — not a cache. The workbook must contain these sheets:
+**Main Data, H&S, Accident logs, Violations, KPI Data**.
 
-The dashboard reads from `lib/data.ts`, which is generated from the Excel workbook.
-To refresh after the workbook changes, re-export the four data sheets
-(`KPI_Monthly`, `Incidents`, `Violations`, `Zone_KPI`) to JSON and regenerate
-`lib/data.ts`. The aggregation logic in `lib/metrics.ts` recomputes every KPI and
-chart automatically.
+To update each month: replace `public/data/QTC_HSE_Data_Workbook.xlsx` (keep the
+same name) with your updated workbook and commit — the dashboard rebuilds itself,
+**no code changes needed**. `lib/data.ts` holds a bundled copy used only as a
+fallback when the file can't be fetched. See **HOW-TO-DEPLOY.md** for the full
+Vercel + monthly-update guide.
+
+## Logos
+
+Drop PNGs into `public/logos/` to override the built-in placeholders:
+`primary-logo.png` (QTC JV), `secondary-logo.png` (Bouygues),
+`welovelife.png`, `almabani-logo.png`.
 
 ## Project structure
 
 ```
-app/                 Next.js app router (layout, page, global styles)
+app/                 Next.js app router (layout, page, favicon, styles)
 components/
-  Dashboard.tsx      Main shell + tab navigation
-  ui.tsx             KPI cards, panels, section headers
-  Tables.tsx         Interactive incident & violation tables
+  Dashboard.tsx      Shell, sticky header, tabs, Page 1, Detailed, Incident Log
+  Snapshot.tsx       16:9 export board + button
+  ZoneKPIs.tsx       Leading/Lagging + 14 zone charts
+  Violators.tsx      Violator leaderboard
+  Tables.tsx         Incident table
+  DataPanel.tsx      Update-data / upload panel
   charts/            Recharts wrappers + SafetyTriangle
+  ui.tsx, icons.tsx  KPI cards, panels, logos, icons
 lib/
-  data.ts            Embedded workbook data (source of truth)
+  parse.ts           Workbook → Dataset parser (production format)
   metrics.ts         KPI & chart aggregations
+  data.ts            Bundled fallback dataset
   types.ts           Shared types
 ```
-
-## Deployment
-
-Deploys as-is to **Vercel** (zero config) or any Node host via `npm run build && npm run start`.
