@@ -47,6 +47,26 @@ refresh) — to update the shared link for everyone, use the GitHub step above.
 
 ---
 
+## Restricting access (company-only)
+
+The site has a built-in access-code gate. It is OFF until you set the code:
+
+1. In Vercel → your project → **Settings → Environment Variables**.
+2. Add: **Name** `ACCESS_CODE` · **Value** a strong code (e.g. a long passphrase)
+   · apply to **Production** (and Preview if you like) → **Save**.
+3. Go to **Deployments → ⋯ on the latest → Redeploy** (env changes need a redeploy).
+
+From then on every page — and the Excel file itself — requires the code.
+Visitors see a branded login page; after entering the code once they stay
+signed in for 30 days on that browser. Share the code only with QTC JV /
+Bouygues staff, and rotate it anytime by changing the variable + redeploying.
+
+Notes:
+- Remove the `ACCESS_CODE` variable (+ redeploy) to make the site public again.
+- This is shared-code protection — right for an internal dashboard. For true
+  per-person company login (Microsoft 365 / Entra ID, only company emails),
+  your IT department must register the app in Azure AD; that can be added later.
+
 ## When WOULD you need code changes?
 Only if you:
 - Rename sheets or columns / change the workbook's structure, **or**
