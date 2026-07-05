@@ -13,7 +13,7 @@ QTC JV / Bouygues Construction / Almabani branding, "we ❤ life" motto.
 | **Violations** | Violator leaderboard (names, Iqama, repeat-offender flags), unique-violator count, and category / company / location / status breakdowns. |
 | **Detailed** | Deep-dive analytics + a monthly KPI register table. |
 | **Incident Log** | Major-risk analysis (by category, zone, month) + the full incident/accident register. |
-| **⬆ Update Data** | Drag-and-drop a workbook to preview a new month instantly. |
+| **✎ Data Entry** | Enter monthly KPIs, incidents, violations and zone KPIs directly in the app (per project: QNTC Male / QNTC Female), save to cloud storage, and download the Excel workbook each month. |
 
 Every figure is recomputed in `lib/metrics.ts` from the raw workbook tables, so
 the cards and charts always agree with the source. Global Frequency Rate =

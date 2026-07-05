@@ -1,14 +1,27 @@
 # QTC JV — H&S Dashboard: Deploy & Monthly Update Guide
 
-## What powers the dashboard
-The dashboard reads **one Excel file** at runtime:
+## How data works now (multi-project + in-app entry)
+The dashboard supports multiple projects (QNTC Male · QNTC Female — switch in
+the header) and data is entered **directly in the ✎ Data Entry tab**:
+monthly KPIs, incidents, violations and zone KPIs. The Excel workbook is now a
+**monthly DOWNLOAD (backup/report), not the input**.
 
-```
-public/data/QTC_HSE_Data_Workbook.xlsx
-```
+### Enable team-wide cloud storage (one time, ~2 clicks)
+Without this, saves stay on the device that entered them. To make entered data
+visible to everyone:
 
-⚠️ **This is NOT a cache file — do not delete it.** It IS the data. If it's
-missing, the dashboard falls back to built-in sample numbers.
+1. In Vercel → your project → **Storage** tab → **Create Database → Blob** →
+   connect it to the project (this auto-adds `BLOB_READ_WRITE_TOKEN`).
+2. **Redeploy.** Saves now go to the cloud and every viewer sees them.
+
+Recommended: also add env var **`EDIT_PIN`** = a short PIN. Anyone can view,
+but saving changes then requires the PIN (protects data from stray edits while
+the site is public).
+
+### Legacy fallback
+`public/data/QTC_HSE_Data_Workbook.xlsx` is still read for the QNTC Male
+project when no cloud/device data exists — don't delete it until you've
+imported it via Data Entry → Import and saved.
 
 ---
 
@@ -49,23 +62,40 @@ refresh) — to update the shared link for everyone, use the GitHub step above.
 
 ## Restricting access (company-only)
 
-The site has a built-in access-code gate. It is OFF until you set the code:
+The gate is OFF until you configure one of the two modes below. In both modes
+every page — and the Excel file itself — requires login; users stay signed in
+for 30 days per browser. Env changes always need a **Redeploy** to take effect
+(Vercel → Deployments → ⋯ → Redeploy).
 
-1. In Vercel → your project → **Settings → Environment Variables**.
-2. Add: **Name** `ACCESS_CODE` · **Value** a strong code (e.g. a long passphrase)
-   · apply to **Production** (and Preview if you like) → **Save**.
-3. Go to **Deployments → ⋯ on the latest → Redeploy** (env changes need a redeploy).
+### Mode A (recommended) — Email OTP, company domains only
+Each person enters their **company email**, receives a **6-digit code**, and
+logs in. Emails outside your approved domains can never get a code.
 
-From then on every page — and the Excel file itself — requires the code.
-Visitors see a branded login page; after entering the code once they stay
-signed in for 30 days on that browser. Share the code only with QTC JV /
-Bouygues staff, and rotate it anytime by changing the variable + redeploying.
+One-time setup (~10 minutes):
+1. Create a free **Brevo** account (brevo.com — 300 emails/day free).
+   In Brevo: **Settings → Senders** → add & verify your own email address as a
+   sender, then **SMTP & API → API Keys** → create a key.
+2. In Vercel → **Settings → Environment Variables**, add (Production):
+   - `AUTH_SECRET`   = a long random string (e.g. 40+ characters — treat like a password)
+   - `ALLOWED_EMAIL_DOMAINS` = `bouygues-construction.com` (comma-separate more:
+     `bouygues-construction.com,almabani.com.sa`)
+   - `BREVO_API_KEY` = the key from step 1
+   - `OTP_FROM_EMAIL` = the sender address you verified in Brevo
+3. **Redeploy.**
+
+(Alternative provider: set `RESEND_API_KEY` instead of the Brevo pair — note
+Resend needs a verified sending domain to email arbitrary recipients.)
+
+### Mode B — one shared access code (simplest)
+Add a single variable `ACCESS_CODE` = a strong passphrase → Redeploy. Everyone
+uses the same code; rotate it by changing the variable + redeploy.
 
 Notes:
-- Remove the `ACCESS_CODE` variable (+ redeploy) to make the site public again.
-- This is shared-code protection — right for an internal dashboard. For true
-  per-person company login (Microsoft 365 / Entra ID, only company emails),
-  your IT department must register the app in Azure AD; that can be added later.
+- If `AUTH_SECRET` is set, Mode A wins; else if `ACCESS_CODE` is set, Mode B;
+  if neither, the site is open.
+- Remove the variables (+ redeploy) to make the site public again.
+- For true corporate SSO (Microsoft 365 / Entra ID), your IT department must
+  register the app in Azure AD; that can be added later.
 
 ## When WOULD you need code changes?
 Only if you:

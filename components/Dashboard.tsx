@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { defaultDataset } from "@/lib/data";
 import { buildMetrics, monthLong, type Metrics, type MonthlyPoint } from "@/lib/metrics";
 import { loadWorkbookFile } from "@/lib/parse";
-import type { Dataset, DataSource } from "@/lib/types";
+import type { Dataset } from "@/lib/types";
 import { StatCard, Panel, SectionTitle, Segmented, Logo, numberFmt, monthDelta } from "./ui";
 import { Icons } from "./icons";
 import { Donut, HBar, ManhoursTrend, MonthlyBars, MonthlyLines, MonthlyArea } from "./charts/Charts";
@@ -12,22 +12,27 @@ import { SafetyTriangle } from "./charts/SafetyTriangle";
 import { IncidentTable } from "./Tables";
 import { Violators } from "./Violators";
 import { ZoneKPIs } from "./ZoneKPIs";
-import { DataPanel } from "./DataPanel";
+import { DataEntry, type SaveResult } from "./DataEntry";
 import { SnapshotButton } from "./Snapshot";
+import { PROJECTS, emptyDataset, type Project } from "@/lib/projects";
 
-const TABS = ["Dashboard", "Zone KPIs", "Violations", "Detailed", "Incident Log", "Update Data"] as const;
+const TABS = ["Dashboard", "Zone KPIs", "Violations", "Detailed", "Incident Log", "Data Entry"] as const;
 type Tab = (typeof TABS)[number];
 
 // Bump when deploying — lets you confirm which build is live (shown in the footer).
-const APP_VERSION = "build 2026-07-01 · tz-fix";
+const APP_VERSION = "build 2026-07-04 · multi-project";
 
 const int = (n: number) => Math.round(n).toLocaleString();
 const r2 = (n: number) => n.toFixed(2);
 
+const localKey = (projectId: string) => `hse-data-${projectId}`;
+
 export default function Dashboard() {
+  const [project, setProject] = useState<Project>(PROJECTS[0]);
   const [dataset, setDataset] = useState<Dataset>(defaultDataset);
-  const [source, setSource] = useState<DataSource>("bundled");
-  const [fileName, setFileName] = useState<string | undefined>();
+  const [source, setSource] = useState<string>("loading");
+  const [dirty, setDirty] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState<Tab>("Dashboard");
   const [scrolled, setScrolled] = useState(false);
 
@@ -41,27 +46,95 @@ export default function Dashboard() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Load the selected project's data: cloud → this device → legacy workbook
+  // file (Male project only) → bundled sample (Male) / empty (other projects).
   useEffect(() => {
     let cancelled = false;
-    loadWorkbookFile()
-      .then(({ dataset }) => {
-        if (!cancelled) {
-          setDataset(dataset);
-          setSource("workbook-file");
+    setSource("loading");
+    setDirty(false);
+    (async () => {
+      try {
+        const res = await fetch(`/api/data?project=${project.id}`, { cache: "no-store" });
+        if (res.ok) {
+          const j = await res.json();
+          if (j.dataset && !cancelled) {
+            setDataset(j.dataset);
+            setSource("cloud");
+            return;
+          }
         }
-      })
-      .catch(() => {});
+      } catch {}
+      try {
+        const raw = localStorage.getItem(localKey(project.id));
+        if (raw && !cancelled) {
+          setDataset(JSON.parse(raw));
+          setSource("device");
+          return;
+        }
+      } catch {}
+      if (project.id === "qntc-male") {
+        try {
+          const { dataset: ds } = await loadWorkbookFile();
+          if (!cancelled) {
+            setDataset(ds);
+            setSource("workbook-file");
+          }
+          return;
+        } catch {}
+        if (!cancelled) {
+          setDataset(defaultDataset);
+          setSource("bundled");
+        }
+        return;
+      }
+      if (!cancelled) {
+        setDataset(emptyDataset());
+        setSource("empty");
+      }
+    })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [project.id]);
 
-  const summary = {
-    months: m.activeMonths.length,
-    incidents: m.incidentRows.length,
-    violations: m.violationRows.length,
-    zoneRows: dataset.zoneKpi.length,
-  };
+  // Every edit updates the live dashboard and is mirrored to this device.
+  function handleChange(ds: Dataset) {
+    setDataset(ds);
+    setDirty(true);
+    try {
+      localStorage.setItem(localKey(project.id), JSON.stringify(ds));
+    } catch {}
+  }
+
+  // Save to cloud storage; falls back to device-only when Blob isn't enabled.
+  async function handleSave(pin?: string): Promise<SaveResult> {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(pin ? { "x-edit-pin": pin } : {}) },
+        body: JSON.stringify({ project: project.id, dataset }),
+      });
+      if (res.ok) {
+        setDirty(false);
+        setSource("cloud");
+        return { ok: true };
+      }
+      if (res.status === 401) return { ok: false, needPin: true };
+      if (res.status === 501) {
+        // Cloud storage not enabled — the localStorage mirror is the save.
+        setDirty(false);
+        setSource("device");
+        return { ok: true, local: true };
+      }
+      const j = await res.json().catch(() => ({}));
+      return { ok: false, error: j.error ?? `Save failed (${res.status}).` };
+    } catch {
+      return { ok: false, error: "Network error — please try again." };
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <div className="min-h-screen">
@@ -76,10 +149,18 @@ export default function Dashboard() {
                   H&amp;S Performance Dashboard
                 </h1>
                 <div className={`mt-0.5 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 ${scrolled ? "hidden sm:flex" : "flex"}`}>
-                  <span>QTC JV · Qiddiya Tennis Centre</span>
+                  <select
+                    value={project.id}
+                    onChange={(e) => setProject(PROJECTS.find((p) => p.id === e.target.value) ?? PROJECTS[0])}
+                    className="rounded border border-line bg-white px-1.5 py-0.5 text-xs font-semibold text-brand focus:border-brand focus:outline-none"
+                  >
+                    {PROJECTS.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
                   <span className="text-line">|</span>
                   <span className="rounded border border-line bg-white px-1.5 py-0.5 font-medium text-slate-700">
-                    {m.periodStart ? `${monthLong(m.periodStart)} – ${monthLong(m.periodEnd)}` : "—"}
+                    {m.periodStart ? `${monthLong(m.periodStart)} – ${monthLong(m.periodEnd)}` : "no data yet"}
                   </span>
                 </div>
               </div>
@@ -100,7 +181,7 @@ export default function Dashboard() {
                   tab === t ? "bg-page text-brand shadow-[inset_0_2px_0_#F15A22]" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
-                {t === "Update Data" ? "⬆ Update Data" : t}
+                {t === "Data Entry" ? "✎ Data Entry" : t}
               </button>
             ))}
           </nav>
@@ -113,23 +194,29 @@ export default function Dashboard() {
         {tab === "Violations" && <Violators m={m} />}
         {tab === "Detailed" && <Detailed m={m} />}
         {tab === "Incident Log" && <IncidentLog m={m} />}
-        {tab === "Update Data" && (
-          <DataPanel
+        {tab === "Data Entry" && (
+          <DataEntry
+            project={project}
+            dataset={dataset}
             source={source}
-            summary={summary}
-            fileName={fileName}
-            onLoaded={(d, _s, name) => {
-              setDataset(d);
-              setSource("uploaded");
-              setFileName(name);
-              setTab("Dashboard");
-            }}
+            dirty={dirty}
+            saving={saving}
+            onChange={handleChange}
+            onSave={handleSave}
           />
         )}
 
         <footer className="mt-10 border-t border-line pt-4 text-center text-[11px] text-slate-400">
-          QTC JV · Bouygues Construction — figures derived from the QTC HSE Data Workbook ·{" "}
-          {source === "uploaded" ? "showing your uploaded workbook (preview)" : source === "workbook-file" ? "live from project workbook" : "built-in sample data"}
+          {project.name} — QTC JV · Bouygues Construction ·{" "}
+          {{
+            cloud: "data from cloud storage",
+            device: "data saved on this device",
+            "workbook-file": "data from the project workbook file",
+            bundled: "built-in sample data",
+            empty: "no data entered yet",
+            loading: "loading…",
+          }[source] ?? source}
+          {dirty && <span className="ml-1 font-semibold text-amber-500">· unsaved changes</span>}
           <span className="ml-1 text-slate-300">· {APP_VERSION}</span>
         </footer>
       </div>
@@ -488,10 +575,10 @@ function EmptyState() {
         </svg>
       </div>
       <div>
-        <p className="text-base font-semibold text-slate-800">No active months in this workbook</p>
+        <p className="text-base font-semibold text-slate-800">No data for this project yet</p>
         <p className="mt-1 max-w-md text-sm text-slate-500">
-          The Main Data sheet has no months with booked manhours yet. Add a month with figures, or use{" "}
-          <b className="text-brand">⬆ Update Data</b> to load a workbook that contains data.
+          Open <b className="text-brand">✎ Data Entry</b> to add your first month's figures, or import an
+          existing Excel workbook there.
         </p>
       </div>
     </div>

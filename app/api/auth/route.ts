@@ -1,11 +1,17 @@
 import { NextResponse } from "next/server";
-import { accessToken, COOKIE_NAME } from "@/lib/auth";
+import { accessToken, authMode, COOKIE_NAME } from "@/lib/auth";
 
+/** GET → tells the login page which mode is active. */
+export async function GET() {
+  return NextResponse.json({ mode: authMode() });
+}
+
+/** POST {code} → access-code mode login. */
 export async function POST(req: Request) {
-  const secret = process.env.ACCESS_CODE;
-  // Protection not enabled — nothing to check.
-  if (!secret) return NextResponse.json({ ok: true, open: true });
-
+  if (authMode() !== "code") {
+    return NextResponse.json({ ok: false, error: "Access-code login is not enabled." }, { status: 400 });
+  }
+  const secret = process.env.ACCESS_CODE!;
   const body = await req.json().catch(() => ({}));
   const code = typeof body.code === "string" ? body.code : "";
 
@@ -19,7 +25,7 @@ export async function POST(req: Request) {
     secure: true,
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 30, // stay signed in for 30 days
+    maxAge: 60 * 60 * 24 * 30,
   });
   return res;
 }
